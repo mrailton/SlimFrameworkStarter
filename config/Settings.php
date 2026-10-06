@@ -4,6 +4,21 @@ declare(strict_types=1);
 
 use Monolog\Level;
 
+$rootDir = dirname(__DIR__);
+
+$resolvePath = static function (string $path) use ($rootDir): string {
+    if (
+        $path === ':memory:'
+        || str_starts_with($path, '/')
+        || str_starts_with($path, '\\')
+        || (strlen($path) > 2 && ctype_alpha($path[0]) && $path[1] === ':')
+    ) {
+        return $path;
+    }
+
+    return $rootDir . '/' . ltrim($path, '/\\');
+};
+
 return [
     'settings' => [
         'app' => [
@@ -12,21 +27,21 @@ return [
             'debug' => filter_var($_ENV['APP_DEBUG'] ?? true, FILTER_VALIDATE_BOOLEAN),
         ],
         'twig' => [
-            'path' => __DIR__ . '/../templates',
+            'path' => $rootDir . '/templates',
             'options' => [
-                'cache' => ($_ENV['TWIG_CACHE'] ?? false) === 'true' ? __DIR__ . '/../var/cache/twig' : false,
+                'cache' => ($_ENV['TWIG_CACHE'] ?? false) === 'true' ? $rootDir . '/var/cache/twig' : false,
                 'debug' => filter_var($_ENV['APP_DEBUG'] ?? true, FILTER_VALIDATE_BOOLEAN),
                 'auto_reload' => true,
             ],
         ],
         'doctrine' => [
             'dev_mode' => filter_var($_ENV['APP_DEBUG'] ?? true, FILTER_VALIDATE_BOOLEAN),
-            'cache_dir' => __DIR__ . '/../var/cache/doctrine',
-            'metadata_dirs' => [__DIR__ . '/../src/Entity'],
+            'cache_dir' => $rootDir . '/var/cache/doctrine',
+            'metadata_dirs' => [$rootDir . '/src/Entity'],
             'connection' => [
                 'driver' => $_ENV['DB_DRIVER'] ?? 'pdo_sqlite',
                 'path' => ($_ENV['DB_DRIVER'] ?? 'pdo_sqlite') === 'pdo_sqlite' 
-                    ? ($_ENV['DB_PATH'] ?? __DIR__ . '/../var/app.sqlite')
+                    ? (isset($_ENV['DB_PATH']) ? $resolvePath($_ENV['DB_PATH']) : $rootDir . '/var/app.sqlite')
                     : null,
                 'host' => $_ENV['DB_HOST'] ?? '127.0.0.1',
                 'port' => (int)($_ENV['DB_PORT'] ?? 3306),
@@ -35,10 +50,26 @@ return [
                 'password' => $_ENV['DB_PASSWORD'] ?? '',
                 'charset' => 'utf8mb4',
             ],
+            'migrations' => [
+                'table_storage' => [
+                    'table_name' => 'doctrine_migration_versions',
+                    'version_column_name' => 'version',
+                    'version_column_length' => 1024,
+                    'executed_at_column_name' => 'executed_at',
+                    'execution_time_column_name' => 'execution_time',
+                ],
+                'migrations_paths' => [
+                    'App\Migrations' => $rootDir . '/migrations',
+                ],
+                'all_or_nothing' => true,
+                'transactional' => true,
+                'check_database_platform' => true,
+                'organize_migrations' => 'none',
+            ],
         ],
         'logger' => [
             'name' => 'app',
-            'path' => $_ENV['LOG_PATH'] ?? __DIR__ . '/../var/log/app.log',
+            'path' => isset($_ENV['LOG_PATH']) ? $resolvePath($_ENV['LOG_PATH']) : $rootDir . '/var/log/app.log',
             'level' => filter_var($_ENV['APP_DEBUG'] ?? true, FILTER_VALIDATE_BOOLEAN) ? Level::Debug : Level::Info,
         ],
     ],

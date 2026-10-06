@@ -3,8 +3,10 @@
 
 declare(strict_types=1);
 
+use Doctrine\Migrations\DependencyFactory;
+use Doctrine\Migrations\Tools\Console\ConsoleRunner as MigrationsConsoleRunner;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\Console\ConsoleRunner;
+use Doctrine\ORM\Tools\Console\ConsoleRunner as OrmConsoleRunner;
 use Doctrine\ORM\Tools\Console\EntityManagerProvider\SingleManagerProvider;
 use Symfony\Component\Console\Application;
 
@@ -18,7 +20,13 @@ if ($container->has(EntityManagerInterface::class)) {
     /** @var EntityManagerInterface $em */
     $em = $container->get(EntityManagerInterface::class);
     $emProvider = new SingleManagerProvider($em);
-    ConsoleRunner::addCommands($cli, $emProvider);
+    OrmConsoleRunner::addCommands($cli, $emProvider);
+}
+
+if ($container->has(DependencyFactory::class)) {
+    /** @var DependencyFactory $dependencyFactory */
+    $dependencyFactory = $container->get(DependencyFactory::class);
+    MigrationsConsoleRunner::addCommands($cli, $dependencyFactory);
 }
 
 $cli->run();

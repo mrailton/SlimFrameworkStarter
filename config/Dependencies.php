@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\Migrations\Configuration\EntityManager\ExistingEntityManager;
+use Doctrine\Migrations\Configuration\Migration\ConfigurationArray;
+use Doctrine\Migrations\DependencyFactory;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMSetup;
@@ -13,7 +15,7 @@ use Monolog\Logger;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Slim\Views\Twig;
-use Slim\Views\TwigMiddleware;
+use function DI\get;
 
 return [
     Twig::class => function (ContainerInterface $c): Twig {
@@ -42,7 +44,21 @@ return [
         return new EntityManager($connection, $config);
     },
 
-    EntityManager::class => \DI\get(EntityManagerInterface::class),
+    EntityManager::class => get(EntityManagerInterface::class),
+
+    DependencyFactory::class => function (ContainerInterface $c): DependencyFactory {
+        $doctrineSettings = $c->get('settings')['doctrine'];
+        $migrationsSettings = $doctrineSettings['migrations'] ?? [];
+
+        $config = new ConfigurationArray($migrationsSettings);
+        $em = $c->get(EntityManagerInterface::class);
+
+        return DependencyFactory::fromEntityManager(
+            $config,
+            new ExistingEntityManager($em),
+            $c->has(LoggerInterface::class) ? $c->get(LoggerInterface::class) : null
+        );
+    },
 
     LoggerInterface::class => function (ContainerInterface $c): LoggerInterface {
         $loggerSettings = $c->get('settings')['logger'];
@@ -58,8 +74,6 @@ return [
     },
 
     UserRepository::class => function (ContainerInterface $c): UserRepository {
-        /** @var EntityManagerInterface $em */
-        $em = $c->get(EntityManagerInterface::class);
-        return new UserRepository($em);
+        return new UserRepository($c->get(EntityManagerInterface::class));
     },
 ];

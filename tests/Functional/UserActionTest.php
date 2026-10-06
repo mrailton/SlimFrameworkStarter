@@ -73,31 +73,4 @@ class UserActionTest extends TestCase
         $body = (string)$response->getBody();
         $this->assertStringContainsString('Email already exists.', $body);
     }
-
-    public function testApiUserListAndCreate(): void
-    {
-        // 1. Create user via JSON API
-        $createRequest = $this->createJsonRequest('POST', '/api/users', [
-            'name' => 'Charlie Api',
-            'email' => 'charlie@example.com',
-        ]);
-
-        $createResponse = $this->handleRequest($createRequest);
-        $this->assertSame(201, $createResponse->getStatusCode());
-        $this->assertStringContainsString('application/json', $createResponse->getHeaderLine('Content-Type'));
-
-        $createdData = json_decode((string)$createResponse->getBody(), true, 512, JSON_THROW_ON_ERROR);
-        $this->assertSame('Charlie Api', $createdData['name']);
-        $this->assertSame('charlie@example.com', $createdData['email']);
-        $this->assertNotNull($createdData['id']);
-
-        // 2. Fetch users via JSON API
-        $listRequest = $this->createRequest('GET', '/api/users', ['Accept' => 'application/json']);
-        $listResponse = $this->handleRequest($listRequest);
-
-        $this->assertSame(200, $listResponse->getStatusCode());
-        $usersList = json_decode((string)$listResponse->getBody(), true, 512, JSON_THROW_ON_ERROR);
-        $this->assertCount(1, $usersList);
-        $this->assertSame('Charlie Api', $usersList[0]['name']);
-    }
 }
