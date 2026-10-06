@@ -75,7 +75,7 @@ class User
         if ($password !== '') {
             $info = password_get_info($password);
 
-            if ($info['algo'] === null || $info['algo'] === 0) {
+            if ($info['algo'] === null) {
                 $this->password = password_hash($password, PASSWORD_DEFAULT);
             } else {
                 $this->password = $password;
