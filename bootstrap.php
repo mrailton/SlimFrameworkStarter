@@ -25,11 +25,11 @@ function createContainer(array $definitions = []): ContainerInterface
 {
     $builder = new ContainerBuilder();
     $builder->useAttributes(true);
-    
+
     $builder->addDefinitions(require __DIR__ . '/config/Settings.php');
     $builder->addDefinitions(require __DIR__ . '/config/Dependencies.php');
 
-    if (!empty($definitions)) {
+    if ($definitions !== []) {
         $builder->addDefinitions($definitions);
     }
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
+use App\Auth\SessionAuth;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\TestCase as BaseTestCase;
@@ -23,6 +25,7 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $_SESSION = [];
         $this->bootApp();
     }
 
@@ -30,7 +33,17 @@ abstract class TestCase extends BaseTestCase
     {
         $this->app = null;
         $this->container = null;
+        $_SESSION = [];
         parent::tearDown();
+    }
+
+    /**
+     * Authenticate test session as given user.
+     */
+    protected function authenticateAs(User $user): self
+    {
+        $_SESSION[SessionAuth::SESSION_KEY] = $user->getId();
+        return $this;
     }
 
     /**
@@ -55,7 +68,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function createDatabaseSchema(): void
     {
-        if ($this->container && $this->container->has(EntityManagerInterface::class)) {
+        if ($this->container instanceof ContainerInterface && $this->container->has(EntityManagerInterface::class)) {
             /** @var EntityManagerInterface $em */
             $em = $this->container->get(EntityManagerInterface::class);
             $schemaTool = new SchemaTool($em);
@@ -84,7 +97,7 @@ abstract class TestCase extends BaseTestCase
         string $method,
         string $uri,
         array $headers = [],
-        array $serverParams = []
+        array $serverParams = [],
     ): ServerRequestInterface {
         $uriFactory = new UriFactory();
         $requestUri = $uriFactory->createUri($uri);
@@ -109,7 +122,7 @@ abstract class TestCase extends BaseTestCase
         string $method,
         string $uri,
         array $data = [],
-        array $headers = []
+        array $headers = [],
     ): ServerRequestInterface {
         $streamFactory = new StreamFactory();
         $stream = $streamFactory->createStream(json_encode($data, JSON_THROW_ON_ERROR));
@@ -117,11 +130,9 @@ abstract class TestCase extends BaseTestCase
         $headers['Content-Type'] = 'application/json';
         $headers['Accept'] = 'application/json';
 
-        $request = $this->createRequest($method, $uri, $headers)
+        return $this->createRequest($method, $uri, $headers)
             ->withBody($stream)
             ->withParsedBody($data);
-
-        return $request;
     }
 
     /**
@@ -134,14 +145,12 @@ abstract class TestCase extends BaseTestCase
         string $method,
         string $uri,
         array $data = [],
-        array $headers = []
+        array $headers = [],
     ): ServerRequestInterface {
         $headers['Content-Type'] = 'application/x-www-form-urlencoded';
 
-        $request = $this->createRequest($method, $uri, $headers)
+        return $this->createRequest($method, $uri, $headers)
             ->withParsedBody($data);
-
-        return $request;
     }
 
     /**

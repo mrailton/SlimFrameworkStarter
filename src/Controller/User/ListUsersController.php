@@ -13,8 +13,7 @@ class ListUsersController extends Controller
 {
     public function __construct(
         private readonly UserRepository $userRepository,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, Response $response): Response
     {

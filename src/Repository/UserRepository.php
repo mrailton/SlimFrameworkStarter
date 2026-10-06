@@ -10,10 +10,10 @@ use Doctrine\ORM\EntityRepository;
 
 class UserRepository
 {
-    private EntityRepository $repository;
+    private readonly EntityRepository $repository;
 
     public function __construct(
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
     ) {
         $this->repository = $this->entityManager->getRepository(User::class);
     }

@@ -4,34 +4,38 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Entity\Traits\TimestampableTrait;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use JsonSerializable;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'users')]
-class User implements JsonSerializable
+#[ORM\HasLifecycleCallbacks]
+class User
 {
+    use TimestampableTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER)]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
-    private string $name;
+    private string $password;
 
-    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    private string $email;
-
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private DateTimeImmutable $createdAt;
-
-    public function __construct(string $name, string $email, ?DateTimeImmutable $createdAt = null)
-    {
-        $this->name = $name;
-        $this->email = $email;
-        $this->createdAt = $createdAt ?? new DateTimeImmutable();
+    public function __construct(
+        #[ORM\Column(type: Types::STRING, length: 255)]
+        private string $name,
+        #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
+        private string $email,
+        string $password = '',
+        ?DateTimeImmutable $createdAt = null,
+        ?DateTimeImmutable $updatedAt = null,
+    ) {
+        $this->setPassword($password);
+        $this->setCreatedAt($createdAt ?? new DateTimeImmutable());
+        $this->setUpdatedAt($updatedAt);
     }
 
     public function getId(): ?int
@@ -61,18 +65,34 @@ class User implements JsonSerializable
         return $this;
     }
 
-    public function getCreatedAt(): DateTimeImmutable
+    public function getPassword(): string
     {
-        return $this->createdAt;
+        return $this->password;
     }
 
-    public function jsonSerialize(): array
+    public function setPassword(string $password): self
     {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'email' => $this->email,
-            'createdAt' => $this->createdAt->format(DATE_ATOM),
-        ];
+        if ($password !== '') {
+            $info = password_get_info($password);
+
+            if ($info['algo'] === null || $info['algo'] === 0) {
+                $this->password = password_hash($password, PASSWORD_DEFAULT);
+            } else {
+                $this->password = $password;
+            }
+        } else {
+            $this->password = '';
+        }
+
+        return $this;
+    }
+
+    public function verifyPassword(string $password): bool
+    {
+        if ($this->password === '') {
+            return false;
+        }
+
+        return password_verify($password, $this->password);
     }
 }

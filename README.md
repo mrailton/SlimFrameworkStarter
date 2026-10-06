@@ -27,19 +27,32 @@ A modern, robust, easily expandable, and highly testable starter application for
 ├── public/
 │   └── index.php          # Web entry point
 ├── src/
+│   ├── Auth/              # Authentication contracts & session implementation
+│   │   ├── AuthInterface.php
+│   │   └── SessionAuth.php
 │   ├── Controller/        # Single-Action Controllers (Invokable)
 │   │   ├── Api/
 │   │   │   └── HealthCheckController.php
+│   │   ├── Auth/
+│   │   │   ├── LoginController.php
+│   │   │   ├── LogoutController.php
+│   │   │   └── ShowLoginController.php
 │   │   ├── User/
 │   │   │   ├── CreateUserController.php
 │   │   │   └── ListUsersController.php
 │   │   ├── Controller.php # Abstract base controller (Twig injection & render helper)
 │   │   └── HomeController.php
 │   ├── Entity/            # Doctrine ORM Entities (PHP 8 Attributes)
+│   │   ├── Traits/
+│   │   │   └── TimestampableTrait.php # Reusable createdAt / updatedAt lifecycle callbacks
 │   │   └── User.php
+│   ├── Middleware/        # PSR-15 Middlewares (AuthMiddleware)
+│   │   └── AuthMiddleware.php
 │   └── Repository/        # Persistence & data query abstractions
 │       └── UserRepository.php
 ├── templates/             # Twig views and layouts
+│   ├── auth/
+│   │   └── login.html.twig
 │   ├── layout.html.twig
 │   ├── home.html.twig
 │   └── users/
@@ -153,6 +166,22 @@ Register your controller route in `config/Routes.php`:
 ```php
 $app->get('/about', App\Controller\AboutController::class)->setName('about');
 ```
+
+### Protecting Routes with Authentication
+To protect routes with authentication, apply `App\Middleware\AuthMiddleware`:
+
+```php
+$app->group('/admin', function (RouteCollectorProxy $group) {
+    $group->get('/dashboard', App\Controller\Admin\DashboardController::class);
+})->add(App\Middleware\AuthMiddleware::class);
+```
+
+When an unauthenticated request is received, `AuthMiddleware` automatically redirects browser requests to `/login` (302) or returns a `401 Unauthorized` JSON response for API requests.
+
+The authenticated user and auth state are also automatically available:
+- In Twig views via `{{ auth.check() }}` and `{{ auth.user().name }}`
+- In request attributes via `$request->getAttribute('user')`
+- Injected via `App\Auth\AuthInterface`
 
 ### Adding a Doctrine Entity
 Create a new entity with PHP 8 attributes in `src/Entity/`:

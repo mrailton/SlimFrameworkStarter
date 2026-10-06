@@ -154,6 +154,12 @@
         <nav>
             <a href="/">Home</a>
             <a href="/users">Users</a>
+            {% if auth and auth.check() %}
+                <span style="margin-left: 1.5rem; color: var(--text-muted);">Signed in as <strong>{{ auth.user().name }}</strong></span>
+                <a href="/logout">Logout</a>
+            {% else %}
+                <a href="/login">Login</a>
+            {% endif %}
         </nav>
     </header>
 

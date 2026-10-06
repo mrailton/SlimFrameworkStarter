@@ -55,4 +55,26 @@ class UserRepositoryTest extends TestCase
 
         $this->assertNull($this->repository->findById($id));
     }
+
+    public function testTimestampsOnPersistAndUpdate(): void
+    {
+        $user = new User('Timestamp Test', 'timestamp@example.com');
+        $this->repository->save($user);
+
+        $this->assertNotNull($user->getId());
+        $this->assertNotNull($user->getCreatedAt());
+        $initialCreatedAt = $user->getCreatedAt();
+        $this->assertNull($user->getUpdatedAt());
+
+        $user->setName('Timestamp Test Updated');
+        $this->repository->save($user);
+
+        $this->assertNotNull($user->getUpdatedAt());
+        $this->assertSame($initialCreatedAt, $user->getCreatedAt());
+
+        $reloaded = $this->repository->findById($user->getId());
+        $this->assertNotNull($reloaded);
+        $this->assertSame('Timestamp Test Updated', $reloaded->getName());
+        $this->assertNotNull($reloaded->getUpdatedAt());
+    }
 }

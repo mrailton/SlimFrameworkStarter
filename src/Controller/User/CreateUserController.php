@@ -18,9 +18,10 @@ class CreateUserController extends Controller
 
     public function __invoke(Request $request, Response $response): Response
     {
-        $data = (array)($request->getParsedBody() ?? []);
-        $name = trim((string)($data['name'] ?? ''));
-        $email = trim((string)($data['email'] ?? ''));
+        $data = (array) ($request->getParsedBody() ?? []);
+        $name = trim((string) ($data['name'] ?? ''));
+        $email = trim((string) ($data['email'] ?? ''));
+        $password = (string) ($data['password'] ?? '');
 
         $errors = [];
         if (empty($name)) {
@@ -28,13 +29,18 @@ class CreateUserController extends Controller
         }
         if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = 'A valid email is required.';
-        } elseif ($this->userRepository->findByEmail($email) !== null) {
+        } elseif ($this->userRepository->findByEmail($email) instanceof User) {
             $errors['email'] = 'Email already exists.';
         }
+        if (empty($password)) {
+            $errors['password'] = 'Password is required.';
+        } elseif (strlen($password) < 6) {
+            $errors['password'] = 'Password must be at least 6 characters.';
+        }
 
-        $accept = $request->getHeaderLine('Accept');
+        $request->getHeaderLine('Accept');
 
-        if (!empty($errors)) {
+        if ($errors !== []) {
             return $this->render($response->withStatus(422), 'users/index.html.twig', [
                 'page_title' => 'User Management',
                 'users' => $this->userRepository->findAll(),
@@ -43,7 +49,7 @@ class CreateUserController extends Controller
             ]);
         }
 
-        $user = new User(name: $name, email: $email);
+        $user = new User(name: $name, email: $email, password: $password);
         $this->userRepository->save($user);
 
         return $response->withHeader('Location', '/users')->withStatus(302);

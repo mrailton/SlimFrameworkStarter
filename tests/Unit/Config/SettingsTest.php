@@ -25,7 +25,7 @@ class SettingsTest extends TestCase
     public function testDefaultPathsResolveToProjectRoot(): void
     {
         unset($_ENV['DB_PATH'], $_ENV['LOG_PATH']);
-        
+
         $config = require __DIR__ . '/../../../config/Settings.php';
         $settings = $config['settings'];
         $projectRoot = realpath(__DIR__ . '/../../..');

@@ -40,11 +40,11 @@ return [
             'metadata_dirs' => [$rootDir . '/src/Entity'],
             'connection' => [
                 'driver' => $_ENV['DB_DRIVER'] ?? 'pdo_sqlite',
-                'path' => ($_ENV['DB_DRIVER'] ?? 'pdo_sqlite') === 'pdo_sqlite' 
+                'path' => ($_ENV['DB_DRIVER'] ?? 'pdo_sqlite') === 'pdo_sqlite'
                     ? (isset($_ENV['DB_PATH']) ? $resolvePath($_ENV['DB_PATH']) : $rootDir . '/var/app.sqlite')
                     : null,
                 'host' => $_ENV['DB_HOST'] ?? '127.0.0.1',
-                'port' => (int)($_ENV['DB_PORT'] ?? 3306),
+                'port' => (int) ($_ENV['DB_PORT'] ?? 3306),
                 'dbname' => $_ENV['DB_NAME'] ?? 'slim_app',
                 'user' => $_ENV['DB_USER'] ?? 'root',
                 'password' => $_ENV['DB_PASSWORD'] ?? '',
