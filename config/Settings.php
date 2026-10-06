@@ -27,7 +27,7 @@ return [
             'debug' => filter_var($_ENV['APP_DEBUG'] ?? true, FILTER_VALIDATE_BOOLEAN),
         ],
         'twig' => [
-            'path' => $rootDir . '/templates',
+            'path' => $rootDir . '/resources/templates',
             'options' => [
                 'cache' => ($_ENV['TWIG_CACHE'] ?? false) === 'true' ? $rootDir . '/var/cache/twig' : false,
                 'debug' => filter_var($_ENV['APP_DEBUG'] ?? true, FILTER_VALIDATE_BOOLEAN),
@@ -71,6 +71,11 @@ return [
             'name' => 'app',
             'path' => isset($_ENV['LOG_PATH']) ? $resolvePath($_ENV['LOG_PATH']) : $rootDir . '/var/log/app.log',
             'level' => filter_var($_ENV['APP_DEBUG'] ?? true, FILTER_VALIDATE_BOOLEAN) ? Level::Debug : Level::Info,
+        ],
+        'vite' => [
+            'manifest' => $rootDir . '/public/build/manifest.json',
+            'hot_file' => $rootDir . '/public/hot',
+            'build_directory' => '/build',
         ],
     ],
 ];

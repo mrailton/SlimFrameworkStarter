@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Auth\AuthInterface;
 use App\Auth\SessionAuth;
 use App\Repository\UserRepository;
+use App\Twig\ViteExtension;
+use App\View\Vite;
 
 use function DI\get;
 
@@ -30,10 +32,20 @@ return [
 
     SessionAuth::class => fn(ContainerInterface $c): SessionAuth => new SessionAuth($c->get(UserRepository::class)),
 
+    Vite::class => function (ContainerInterface $c): Vite {
+        $settings = $c->get('settings')['vite'];
+        return new Vite(
+            manifestPath: $settings['manifest'],
+            hotFilePath: $settings['hot_file'],
+            buildDirectory: $settings['build_directory'] ?? '/build',
+        );
+    },
+
     Twig::class => function (ContainerInterface $c): Twig {
         $settings = $c->get('settings')['twig'];
         $twig = Twig::create($settings['path'], $settings['options']);
         $twig->getEnvironment()->addGlobal('auth', $c->get(AuthInterface::class));
+        $twig->addExtension(new ViteExtension($c->get(Vite::class)));
         return $twig;
     },
 

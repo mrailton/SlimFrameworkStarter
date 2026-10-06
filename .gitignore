@@ -7,3 +7,6 @@
 .env
 .phpunit.cache/
 .phpunit.result.cache
+node_modules/
+/public/hot
+/public/build/

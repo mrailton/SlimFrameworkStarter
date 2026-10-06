@@ -73,7 +73,7 @@ class SessionAuth implements AuthInterface
     private function ensureSession(): void
     {
         if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
-            session_start();
+            @session_start();
         }
     }
 }

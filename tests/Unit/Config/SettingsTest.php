@@ -80,4 +80,26 @@ class SettingsTest extends TestCase
         $this->assertSame(191, $doctrine['migrations']['table_storage']['version_column_length']);
         $this->assertSame($projectRoot . '/migrations', $doctrine['migrations']['migrations_paths']['App\Migrations']);
     }
+
+    public function testTwigSettingsAreConfigured(): void
+    {
+        $config = require __DIR__ . '/../../../config/Settings.php';
+        $settings = $config['settings'];
+        $projectRoot = realpath(__DIR__ . '/../../..');
+
+        $this->assertArrayHasKey('twig', $settings);
+        $this->assertSame($projectRoot . '/resources/templates', $settings['twig']['path']);
+    }
+
+    public function testViteSettingsAreConfigured(): void
+    {
+        $config = require __DIR__ . '/../../../config/Settings.php';
+        $settings = $config['settings'];
+        $projectRoot = realpath(__DIR__ . '/../../..');
+
+        $this->assertArrayHasKey('vite', $settings);
+        $this->assertSame($projectRoot . '/public/build/manifest.json', $settings['vite']['manifest']);
+        $this->assertSame($projectRoot . '/public/hot', $settings['vite']['hot_file']);
+        $this->assertSame('/build', $settings['vite']['build_directory']);
+    }
 }
