@@ -1,0 +1,32 @@
+{% extends 'layout.html.twig' %}
+
+{% block content %}
+<div class="card">
+    <h1>Welcome to your Slim Starter App</h1>
+    <p>A modern, testable, and robust starter architecture powered by <strong>Slim 4</strong>, <strong>Doctrine ORM</strong>, <strong>Twig</strong>, and <strong>PHP-DI</strong>.</p>
+</div>
+
+<div class="card">
+    <h2>Included Stack & Features</h2>
+    <ul>
+        {% for feature in features %}
+            <li>{{ feature }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="card">
+    <h2>Architecture Overview</h2>
+    <p>This starter template follows clean architecture principles:</p>
+    <ul>
+        <li><code>src/Action/</code>: Single Action Controllers (invokable PSR-15 handlers)</li>
+        <li><code>src/Entity/</code>: Doctrine ORM entity models with PHP 8 Attributes</li>
+        <li><code>src/Repository/</code>: Data persistence abstraction</li>
+        <li><code>templates/</code>: Twig templates and layouts</li>
+        <li><code>config/</code>: Settings, container definitions, middleware, and routes</li>
+        <li><code>bin/console</code>: CLI application for database schema management and commands</li>
+        <li><code>tests/</code>: PHPUnit test suite with in-memory database and HTTP test helpers</li>
+    </ul>
+    <p><a href="/users" class="btn">Explore User Demo &rarr;</a></p>
+</div>
+{% endblock %}

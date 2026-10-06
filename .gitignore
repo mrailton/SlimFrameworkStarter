@@ -1,0 +1,9 @@
+/vendor/
+/var/cache/*
+/var/log/*
+/var/*.sqlite
+/var/coverage*
+!.gitkeep
+.env
+.phpunit.cache/
+.phpunit.result.cache
