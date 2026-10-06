@@ -51,6 +51,10 @@
         "format": [
             "vendor/bin/rector",
             "vendor/bin/pint"
+        ],
+        "lint": [
+            "vendor/bin/rector --dry-run",
+            "vendor/bin/pint --test"
         ]
     }
 }
