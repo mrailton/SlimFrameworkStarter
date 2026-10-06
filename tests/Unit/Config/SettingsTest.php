@@ -77,6 +77,7 @@ class SettingsTest extends TestCase
 
         $this->assertArrayHasKey('migrations', $doctrine);
         $this->assertSame('doctrine_migration_versions', $doctrine['migrations']['table_storage']['table_name']);
+        $this->assertSame(191, $doctrine['migrations']['table_storage']['version_column_length']);
         $this->assertSame($projectRoot . '/migrations', $doctrine['migrations']['migrations_paths']['App\Migrations']);
     }
 }
