@@ -44,6 +44,12 @@
         "phpstan/phpstan-doctrine": "^2.0"
     },
     "scripts": {
+        "setup": [
+            "@composer install",
+            "cp .env.example .env",
+            "npm install",
+            "npm run build"
+        ],
         "serve": [
             "@composer install",
             "php -S localhost:8000 -t public public/index.php"
