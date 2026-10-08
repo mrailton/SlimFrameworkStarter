@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Auth\AuthInterface;
 use App\Auth\SessionAuth;
-use App\Repository\UserRepository;
 use App\Twig\ViteExtension;
 use App\View\Vite;
 
@@ -29,8 +28,6 @@ return [
     ResponseFactoryInterface::class => fn(): ResponseFactoryInterface => new ResponseFactory(),
 
     AuthInterface::class => get(SessionAuth::class),
-
-    SessionAuth::class => fn(ContainerInterface $c): SessionAuth => new SessionAuth($c->get(UserRepository::class)),
 
     Vite::class => function (ContainerInterface $c): Vite {
         $settings = $c->get('settings')['vite'];
@@ -95,6 +92,4 @@ return [
         $logger->pushHandler(new StreamHandler($loggerSettings['path'], $loggerSettings['level']));
         return $logger;
     },
-
-    UserRepository::class => fn(ContainerInterface $c): UserRepository => new UserRepository($c->get(EntityManagerInterface::class)),
 ];
