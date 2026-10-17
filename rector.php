@@ -16,6 +16,7 @@ return RectorConfig::configure()
         __DIR__ . '/src',
         __DIR__ . '/tests',
         __DIR__ . '/bootstrap.php',
+        __DIR__ . '/migrations',
     ])
     ->withSkip([
         __DIR__ . '/var',
