@@ -1,0 +1,71 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests;
+
+use PHPUnit\Framework\TestCase as BaseTestCase;
+use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Slim\App;
+use Slim\Psr7\Factory\ServerRequestFactory;
+use Slim\Psr7\Factory\UriFactory;
+
+class TestCase extends BaseTestCase
+{
+    protected ?App $app = null;
+    protected ?ContainerInterface $container = null;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $_SESSION = [];
+        $this->bootApp();
+    }
+
+    protected function tearDown(): void
+    {
+        $this->app = null;
+        $this->container = null;
+        $_SESSION = [];
+        parent::tearDown();
+    }
+
+    protected function bootApp(array $containerOverrides = []): App
+    {
+        require_once __DIR__ . '/../bootstrap.php';
+
+        $this->container = createContainer($containerOverrides);
+        $this->app = createApp($this->container);
+
+        return $this->app;
+    }
+
+    protected function createRequest(string $method, string $uri, array $headers = [], array $serverParams = []): ServerRequestInterface
+    {
+        $uriFactory = new UriFactory();
+        $requestUri = $uriFactory->createUri($uri);
+
+        $serverRequestFactory = new ServerRequestFactory();
+        $request = $serverRequestFactory->createServerRequest($method, $requestUri, $serverParams);
+
+        foreach ($headers as $name => $value) {
+            $request = $request->withHeader($name, $value);
+        }
+
+        return $request;
+    }
+
+    protected function handleRequest(ServerRequestInterface $request): ResponseInterface
+    {
+        return $this->app->handle($request);
+    }
+
+    protected function get(string $uri): ResponseInterface
+    {
+        $request = $this->createRequest('GET', $uri);
+        return $this->handleRequest($request);
+
+    }
+}
