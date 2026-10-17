@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Twig\ViteExtension;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Slim\Psr7\Factory\ResponseFactory;
@@ -13,6 +14,15 @@ return [
     Twig::class => function (ContainerInterface $c): Twig {
         $settings = $c->get('settings')['twig'];
 
-        return Twig::create($settings['path'], $settings['options']);
+        $twig = Twig::create($settings['path'], $settings['options']);
+
+        $twig->addExtension(new ViteExtension(
+            isDev: $c->get('settings')['app']['env'] === 'development',
+            manifestPath: __DIR__ . '/../public/build/manifest.json',
+            buildUrl: '/build/',
+            devServer: 'http://localhost:5173',
+        ));
+
+        return $twig;
     },
 ];
