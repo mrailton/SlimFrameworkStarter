@@ -25,7 +25,7 @@ return RectorConfig::configure()
         ReturnUnionTypeRector::class,
         AddArrowFunctionReturnTypeRector::class,
     ])
-    ->withPhpSets()
+    ->withPhpSets(php85: true)
     ->withImportNames()
     ->withComposerBased(
         twig: true,
