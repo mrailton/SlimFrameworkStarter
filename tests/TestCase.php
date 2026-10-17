@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use App\Auth\AuthManager;
+use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -39,7 +43,32 @@ class TestCase extends BaseTestCase
         $this->container = createContainer($containerOverrides);
         $this->app = createApp($this->container);
 
+        $this->createDatabaseSchema();
+
         return $this->app;
+    }
+
+    protected function createDatabaseSchema(): void
+    {
+        if ($this->container instanceof ContainerInterface && $this->container->has(EntityManagerInterface::class)) {
+            $em = $this->container->get(EntityManagerInterface::class);
+            $schemaTool = new SchemaTool($em);
+            $metadata = $em->getMetadataFactory()->getAllMetadata();
+
+            $schemaTool->dropSchema($metadata);
+            $schemaTool->createSchema($metadata);
+        }
+    }
+
+    protected function getEntityManager(): EntityManagerInterface
+    {
+        return $this->container->get(EntityManagerInterface::class);
+    }
+
+    protected function authenticateAs(User $user): self
+    {
+        $_SESSION[AuthManager::SESSION_KEY] = $user->getId();
+        return $this;
     }
 
     protected function createRequest(string $method, string $uri, array $headers = [], array $serverParams = []): ServerRequestInterface
@@ -65,6 +94,15 @@ class TestCase extends BaseTestCase
     protected function get(string $uri): ResponseInterface
     {
         $request = $this->createRequest('GET', $uri);
+        return $this->handleRequest($request);
+    }
+
+    protected function post(string $uri, array $data): ResponseInterface
+    {
+        $headers['Content-Type'] = 'application/x-www-form-urlencoded';
+
+        $request =  $this->createRequest('POST', $uri, $headers)->withParsedBody($data);
+
         return $this->handleRequest($request);
     }
 }

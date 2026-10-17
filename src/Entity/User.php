@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Entities;
+namespace App\Entity;
 
-use App\Entities\Traits\TimestampTrait;
+use App\Entity\Traits\TimestampTrait;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -28,6 +28,13 @@ class User
 
     #[ORM\Column(type: Types::STRING, length: 255)]
     private string $password;
+
+    public function __construct(?string $name = null, ?string $email = null, ?string $password = null)
+    {
+        $this->setName($name ?? '');
+        $this->setEmail($email ?? '');
+        $this->setPassword($password ?? '');
+    }
 
     public function getId(): ?int
     {
@@ -68,5 +75,14 @@ class User
         $this->password = password_hash($password, PASSWORD_DEFAULT);
 
         return $this;
+    }
+
+    public function verifyPassword(string $password): bool
+    {
+        if ($this->password === '') {
+            return false;
+        }
+
+        return password_verify($password, $this->password);
     }
 }

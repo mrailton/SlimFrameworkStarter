@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Entities\Traits;
+namespace App\Entity\Traits;
 
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;

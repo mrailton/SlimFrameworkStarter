@@ -39,7 +39,7 @@ return [
         'doctrine' => [
             'dev_mode' => filter_var($_ENV['APP_DEBUG'] ?? true, FILTER_VALIDATE_BOOLEAN),
             'cache_dir' => $rootDir . '/var/cache/doctrine',
-            'metadata_dirs' => [$rootDir . '/src/Entities'],
+            'metadata_dirs' => [$rootDir . '/src/Entity'],
             'connection' => [
                 'driver' => $_ENV['DB_DRIVER'] ?? 'pdo_sqlite',
                 'path' => ($_ENV['DB_DRIVER'] ?? 'pdo_sqlite') === 'pdo_sqlite'

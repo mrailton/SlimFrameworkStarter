@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Auth\AuthManager;
 use App\Twig\ViteExtension;
 
 use function DI\get;
@@ -28,6 +29,8 @@ return [
         $settings = $c->get('settings')['twig'];
 
         $twig = Twig::create($settings['path'], $settings['options']);
+
+        $twig->getEnvironment()->addGlobal('auth', $c->get(AuthManager::class));
 
         $twig->addExtension(new ViteExtension(
             isDev: $c->get('settings')['app']['env'] === 'development',
