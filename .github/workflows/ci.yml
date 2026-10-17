@@ -87,7 +87,7 @@ jobs:
           cp .env.example .env
 
       - name: Run migrations
-        run: php bin/console migrations:migrate --no-interaction
+        run: php console migrations:migrate --no-interaction
 
       - name: Run tests
         run: composer test
