@@ -13,6 +13,6 @@ class BaseController
 
     protected function render(ResponseInterface $response, string $template, array $data = []): ResponseInterface
     {
-        return $this->twig->render($response, $template, $data);
+        return $this->twig->render($response, $template . '.html.twig', $data);
     }
 }

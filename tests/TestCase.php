@@ -66,6 +66,5 @@ class TestCase extends BaseTestCase
     {
         $request = $this->createRequest('GET', $uri);
         return $this->handleRequest($request);
-
     }
 }
