@@ -11,11 +11,14 @@ class AuthManager
 {
     public const string SESSION_KEY = 'auth_user_id';
 
+    private ?User $user = null;
+    private ?int $resolvedUserId = null;
+
     public function __construct(private readonly UserRepository $userRepository) {}
 
     public function check(): bool
     {
-        return $this->id() !== null && $this->user() instanceof User;
+        return $this->user() instanceof User;
     }
 
     public function attempt(string $email, string $password): bool
@@ -42,12 +45,17 @@ class AuthManager
         }
 
         $_SESSION[self::SESSION_KEY] = $user->getId();
+        $this->user = $user;
+        $this->resolvedUserId = $user->getId();
     }
 
     public function logout(): void
     {
         $this->ensureSession();
         unset($_SESSION[self::SESSION_KEY]);
+        $this->user = null;
+        $this->resolvedUserId = null;
+
         if (session_status() === PHP_SESSION_ACTIVE && !headers_sent()) {
             session_regenerate_id(true);
         }
@@ -64,11 +72,19 @@ class AuthManager
     {
         $id = $this->id();
         if ($id === null) {
+            $this->user = null;
+            $this->resolvedUserId = null;
             return null;
         }
 
-        return $this->userRepository->findById($id);
+        if ($this->resolvedUserId === $id) {
+            return $this->user;
+        }
+
+        $this->resolvedUserId = $id;
+        return $this->user = $this->userRepository->findById($id);
     }
+
     private function ensureSession(): void
     {
         if (session_status() === PHP_SESSION_NONE && !headers_sent()) {

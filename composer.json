@@ -32,7 +32,8 @@
         "doctrine/migrations": "^3.9",
         "monolog/monolog": "^3.12",
         "symfony/console": "^8.1",
-        "symfony/cache": "^8.1"
+        "symfony/cache": "^8.1",
+        "slim/csrf": "^1.5"
     },
     "require-dev": {
         "phpunit/phpunit": "^13.4",

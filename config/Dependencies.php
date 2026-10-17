@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Auth\AuthManager;
+use App\Twig\CsrfExtension;
 use App\Twig\ViteExtension;
 
 use function DI\get;
@@ -19,11 +20,31 @@ use Monolog\Logger;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Log\LoggerInterface;
+use Slim\Csrf\Guard;
 use Slim\Psr7\Factory\ResponseFactory;
 use Slim\Views\Twig;
 
 return [
     ResponseFactoryInterface::class => fn(): ResponseFactoryInterface => new ResponseFactory(),
+
+    Guard::class => function (ContainerInterface $c): Guard {
+        if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+            @session_start();
+        }
+
+        if (!isset($_SESSION['csrf']) || !is_array($_SESSION['csrf'])) {
+            $_SESSION['csrf'] = [];
+        }
+
+        $responseFactory = $c->get(ResponseFactoryInterface::class);
+
+        return new Guard(
+            responseFactory: $responseFactory,
+            prefix: 'csrf',
+            storage: $_SESSION['csrf'],
+            persistentTokenMode: true,
+        );
+    },
 
     Twig::class => function (ContainerInterface $c): Twig {
         $settings = $c->get('settings')['twig'];
@@ -31,6 +52,8 @@ return [
         $twig = Twig::create($settings['path'], $settings['options']);
 
         $twig->getEnvironment()->addGlobal('auth', $c->get(AuthManager::class));
+
+        $twig->addExtension(new CsrfExtension($c->get(Guard::class)));
 
         $twig->addExtension(new ViteExtension(
             isDev: $c->get('settings')['app']['env'] === 'development',

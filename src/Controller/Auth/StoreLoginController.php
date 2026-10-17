@@ -8,14 +8,24 @@ use App\Auth\AuthManager;
 use App\Controller\BaseController;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
+use Slim\Views\Twig;
 
 class StoreLoginController extends BaseController
 {
-    public function __construct(private readonly AuthManager $auth) {}
+    public function __construct(
+        Twig $twig,
+        private readonly AuthManager $auth,
+    ) {
+        parent::__construct($twig);
+    }
 
     public function __invoke(Request $request, Response $response): Response
     {
-        $data = (array) $request->getParsedBody() ?? [];
+        if ($this->auth->check()) {
+            return $this->redirect($response, '/');
+        }
+
+        $data = (array) ($request->getParsedBody() ?? []);
         $email = trim((string) ($data['email'] ?? ''));
         $password = (string) ($data['password'] ?? '');
 
@@ -40,7 +50,7 @@ class StoreLoginController extends BaseController
             return $this->redirect($response, '/');
         }
 
-        $errors['email'] = 'Invalid email or password.';
+        $errors['auth'] = 'Invalid email or password.';
 
         return $this->render($response->withStatus(422), 'auth/login', [
             'page_title' => 'Sign In',

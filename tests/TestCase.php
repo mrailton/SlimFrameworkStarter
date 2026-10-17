@@ -13,6 +13,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\App;
+use Slim\Csrf\Guard;
 use Slim\Psr7\Factory\ServerRequestFactory;
 use Slim\Psr7\Factory\UriFactory;
 
@@ -97,11 +98,27 @@ class TestCase extends BaseTestCase
         return $this->handleRequest($request);
     }
 
-    protected function post(string $uri, array $data): ResponseInterface
+    protected function getCsrfToken(): array
     {
-        $headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        /** @var Guard $guard */
+        $guard = $this->container->get(Guard::class);
+        $pair = $guard->generateToken();
 
-        $request =  $this->createRequest('POST', $uri, $headers)->withParsedBody($data);
+        return [
+            $guard->getTokenNameKey() => $pair[$guard->getTokenNameKey()],
+            $guard->getTokenValueKey() => $pair[$guard->getTokenValueKey()],
+        ];
+    }
+
+    protected function post(string $uri, array $data = [], bool $withCsrf = true): ResponseInterface
+    {
+        if ($withCsrf && $this->container instanceof ContainerInterface && $this->container->has(Guard::class)) {
+            $data = array_merge($this->getCsrfToken(), $data);
+        }
+
+        $headers = ['Content-Type' => 'application/x-www-form-urlencoded'];
+
+        $request = $this->createRequest('POST', $uri, $headers)->withParsedBody($data);
 
         return $this->handleRequest($request);
     }

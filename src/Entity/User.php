@@ -33,7 +33,11 @@ class User
     {
         $this->setName($name ?? '');
         $this->setEmail($email ?? '');
-        $this->setPassword($password ?? '');
+        if ($password !== null && $password !== '') {
+            $this->setPassword($password);
+        } else {
+            $this->password = '';
+        }
     }
 
     public function getId(): ?int
@@ -72,6 +76,12 @@ class User
 
     public function setPassword(string $password): static
     {
+        if ($password === '') {
+            $this->password = '';
+
+            return $this;
+        }
+
         $this->password = password_hash($password, PASSWORD_DEFAULT);
 
         return $this;
@@ -79,7 +89,7 @@ class User
 
     public function verifyPassword(string $password): bool
     {
-        if ($this->password === '') {
+        if ($this->password === '' || $password === '') {
             return false;
         }
 
