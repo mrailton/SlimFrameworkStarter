@@ -6,12 +6,7 @@ namespace App\Twig;
 
 use const ENT_QUOTES;
 
-use function htmlspecialchars;
-
 use Slim\Csrf\Guard;
-
-use function sprintf;
-
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 use Twig\TwigFunction;
@@ -40,6 +35,7 @@ final class CsrfExtension extends AbstractExtension implements GlobalsInterface
         ];
     }
 
+
     public function renderFields(): string
     {
         $token = $this->getToken();
@@ -54,9 +50,6 @@ final class CsrfExtension extends AbstractExtension implements GlobalsInterface
         );
     }
 
-    /**
-     * @return array{name_key: string, name: string, value_key: string, value: string}
-     */
     public function getToken(): array
     {
         $nameKey = $this->guard->getTokenNameKey();
