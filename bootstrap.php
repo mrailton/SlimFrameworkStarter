@@ -7,8 +7,6 @@ use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
 use Slim\App;
 
-require_once __DIR__ . '/vendor/autoload.php';
-
 function createContainer(array $definitions = []): ContainerInterface
 {
     $builder = new ContainerBuilder();
