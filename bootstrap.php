@@ -4,16 +4,10 @@ declare(strict_types=1);
 
 use DI\Bridge\Slim\Bridge;
 use DI\ContainerBuilder;
-use Dotenv\Dotenv;
 use Psr\Container\ContainerInterface;
 use Slim\App;
 
 require_once __DIR__ . '/vendor/autoload.php';
-
-if (file_exists(__DIR__ . '/.env')) {
-    $dotenv = Dotenv::createImmutable(__DIR__);
-    $dotenv->safeLoad();
-}
 
 function createContainer(array $definitions = []): ContainerInterface
 {
