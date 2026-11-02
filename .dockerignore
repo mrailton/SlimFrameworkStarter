@@ -1,0 +1,13 @@
+node_modules
+/public/build
+/storage/*.key
+.env
+.env.*
+/vendor
+.phpunit.result.cache
+.vscode
+.idea
+.git
+README.md
+docker-compose.yml
+docker-compose.override.yml

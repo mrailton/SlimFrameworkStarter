@@ -11,83 +11,98 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
-  lint:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build test image
+        uses: docker/build-push-action@v6
         with:
-          php-version: '8.5'
-          tools: composer:v2
+          context: .
+          file: docker/Dockerfile
+          target: test
+          load: true
+          tags: app-test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Cache Composer
-        uses: actions/cache@v5
+      - name: Export test image
+        run: docker save app-test | gzip > app-test.tar.gz
+
+      - name: Upload test image
+        uses: actions/upload-artifact@v4
         with:
-          path: vendor
-          key: composer-${{ hashFiles('composer.lock') }}
-          restore-keys: composer-
+          name: app-test-image
+          path: app-test.tar.gz
+          retention-days: 1
+          compression-level: 0
 
-      - name: Install dependencies
-        run: composer install --no-interaction --no-progress
+  lint:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download test image
+        uses: actions/download-artifact@v4
+        with:
+          name: app-test-image
 
-      - name: Check code style
-        run: composer lint
+      - name: Load test image
+        run: docker load --input app-test.tar.gz
+
+      - name: Run lint
+        run: docker run --rm app-test composer lint
 
   test:
+    needs: build
     runs-on: ubuntu-latest
+    steps:
+      - name: Download test image
+        uses: actions/download-artifact@v4
+        with:
+          name: app-test-image
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_DATABASE: slim_starter
-          options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-        ports:
-          - 3306:3306
+      - name: Load test image
+        run: docker load --input app-test.tar.gz
 
+      - name: Run tests
+        run: docker run --rm app-test composer test -- --no-coverage
+
+  publish:
+    needs: [lint, test]
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Set lowercase image name
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
         with:
-          php-version: '8.5'
-          extensions: pdo_mysql, bcmath, mbstring, xml, curl
-          tools: composer:v2
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cache Composer
-        uses: actions/cache@v5
+      - name: Publish image
+        uses: docker/build-push-action@v6
         with:
-          path: vendor
-          key: composer-${{ hashFiles('composer.lock') }}
-          restore-keys: composer-
-
-      - name: Install PHP dependencies
-        run: composer install --no-interaction --no-progress
-
-      - name: Cache Node
-        uses: actions/cache@v5
-        with:
-          path: node_modules
-          key: node-${{ hashFiles('package-lock.json') }}
-          restore-keys: node-
-
-      - name: Install Node dependencies
-        run: npm ci --ignore-scripts --no-audit --no-fund
-
-      - name: Build assets
-        run: npm run build
-
-      - name: Prepare environment
-        run: |
-          cp .env.example .env
-
-      - name: Run migrations
-        run: php console migrations:migrate --no-interaction
-
-      - name: Run tests
-        run: composer test
+          context: .
+          file: docker/Dockerfile
+          target: runtime
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
