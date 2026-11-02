@@ -7,7 +7,6 @@ use Rector\TypeDeclaration\Rector\ArrowFunction\AddArrowFunctionReturnTypeRector
 use Rector\TypeDeclaration\Rector\ClassMethod\ReturnTypeFromStrictTypedCallRector;
 use Rector\TypeDeclaration\Rector\ClassMethod\ReturnUnionTypeRector;
 use Rector\TypeDeclaration\Rector\Closure\AddClosureVoidReturnTypeWhereNoReturnRector;
-use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
 
 return RectorConfig::configure()
     ->withPaths([
@@ -39,7 +38,4 @@ return RectorConfig::configure()
         typeDeclarations: true,
         privatization: true,
         earlyReturn: true,
-    )
-    ->withRules([
-        DeclareStrictTypesRector::class,
-    ]);
+    );
