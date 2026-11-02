@@ -106,3 +106,14 @@ jobs:
             ${{ env.IMAGE }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy:
+    needs: publish
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      DOKPLOY_DEPLOY_HOOK: ${{ secrets.DOKPLOY_DEPLOY_HOOK }}
+    steps:
+      - name: Trigger Dokploy deployment
+        if: env.DOKPLOY_DEPLOY_HOOK != ''
+        run: curl -fsS -X POST "$DOKPLOY_DEPLOY_HOOK"
