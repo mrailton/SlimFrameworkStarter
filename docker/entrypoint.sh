@@ -1,10 +1,7 @@
 #!/bin/bash
 set -e
 
-if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
-    echo "Running migrations..."
-    php artisan migrate --force
-fi
+echo "Running migrations..."
+php console migrations:migrate --no-interaction
 
-# Hand off to the image's own entrypoint (starts nginx + FPM)
 exec docker-php-serversideup-entrypoint "$@"
