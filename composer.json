@@ -38,7 +38,11 @@
   "require-dev": {
     "phpunit/phpunit": "^13.4",
     "rector/rector": "^2.7",
-    "laravel/pint": "^1.32"
+    "laravel/pint": "^1.32",
+    "phpstan/phpstan": "^2.3",
+    "phpstan/extension-installer": "^1.4",
+    "phpstan/phpstan-phpunit": "^2.1",
+    "phpstan/phpstan-doctrine": "^2.1"
   },
   "scripts": {
     "setup": [
@@ -56,11 +60,17 @@
     ],
     "lint": [
       "vendor/bin/rector --dry-run",
-      "vendor/bin/pint --test"
+      "vendor/bin/pint --test",
+      "vendor/bin/phpstan analyse --memory-limit=512M"
     ],
     "dev": [
       "Composer\\Config::disableProcessTimeout",
       "npx concurrently -c \"#93c5fd,#c4b5fd,\" \"php -S localhost:8000 -t public public/index.php\" \"npm run dev\" --names=server,vite"
     ]
+  },
+  "config": {
+    "allow-plugins": {
+      "phpstan/extension-installer": true
+    }
   }
 }

@@ -1,0 +1,15 @@
+parameters:
+    level: 3
+
+    paths:
+        - src
+        - tests
+        - config
+        - public
+        - migrations
+        - console
+
+    # Strict analysis configuration
+    checkFunctionNameCase: true
+    checkInternalClassCaseSensitivity: true
+    reportUnmatchedIgnoredErrors: true
