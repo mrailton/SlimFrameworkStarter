@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\AppFactory;
 use Dotenv\Dotenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -9,7 +10,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $dotenv = Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->safeLoad();
 
-$app = require_once __DIR__ . '/../bootstrap.php';
+$app = AppFactory::createApp();
 
 try {
     $app->run();

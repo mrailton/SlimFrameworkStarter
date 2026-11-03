@@ -39,7 +39,7 @@ RUN install-php-extensions intl
 WORKDIR /var/www/html
 
 # Copy application files (read-only for www-data)
-COPY bootstrap.php console ./
+COPY console ./
 COPY config/ ./config/
 COPY migrations/ ./migrations/
 COPY public/ ./public/

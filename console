@@ -3,6 +3,7 @@
 
 declare(strict_types=1);
 
+use App\AppFactory;
 use Doctrine\Migrations\DependencyFactory;
 use Doctrine\Migrations\Tools\Console\ConsoleRunner as MigrationsConsoleRunner;
 use Doctrine\ORM\EntityManagerInterface;
@@ -16,9 +17,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->safeLoad();
 
-require_once __DIR__ . '/bootstrap.php';
-
-$container = createContainer();
+$container = AppFactory::createContainer();
 
 $cli = new Application('Slim Starter Console', '1.0.0');
 

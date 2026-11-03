@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use App\AppFactory;
 use App\Auth\AuthManager;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -39,10 +40,8 @@ class TestCase extends BaseTestCase
 
     protected function bootApp(array $containerOverrides = []): App
     {
-        require_once __DIR__ . '/../bootstrap.php';
-
-        $this->container = createContainer($containerOverrides);
-        $this->app = createApp($this->container);
+        $this->container = AppFactory::createContainer($containerOverrides);
+        $this->app = AppFactory::createApp($this->container);
 
         $this->createDatabaseSchema();
 
