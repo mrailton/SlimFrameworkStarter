@@ -9,8 +9,11 @@ use App\Auth\AuthManager;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+use Exception;
 use PHPUnit\Framework\TestCase as BaseTestCase;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\App;
@@ -20,6 +23,7 @@ use Slim\Psr7\Factory\UriFactory;
 
 class TestCase extends BaseTestCase
 {
+    /** @var App<ContainerInterface>|null */
     protected ?App $app = null;
     protected ?ContainerInterface $container = null;
 
@@ -38,14 +42,21 @@ class TestCase extends BaseTestCase
         parent::tearDown();
     }
 
+    /**
+     * @param array<string, mixed> $containerOverrides
+     * @return App<ContainerInterface>
+     * @throws Exception
+     */
     protected function bootApp(array $containerOverrides = []): App
     {
         $this->container = AppFactory::createContainer($containerOverrides);
-        $this->app = AppFactory::createApp($this->container);
+        $app = AppFactory::createApp($this->container);
+
+        $this->app = $app;
 
         $this->createDatabaseSchema();
 
-        return $this->app;
+        return $app;
     }
 
     protected function createDatabaseSchema(): void
@@ -62,7 +73,7 @@ class TestCase extends BaseTestCase
 
     protected function getEntityManager(): EntityManagerInterface
     {
-        return $this->container->get(EntityManagerInterface::class);
+        return $this->getService(EntityManagerInterface::class);
     }
 
     protected function authenticateAs(User $user): self
@@ -71,6 +82,10 @@ class TestCase extends BaseTestCase
         return $this;
     }
 
+    /**
+     * @param array<string, string|string[]> $headers
+     * @param array<string, mixed> $serverParams
+     */
     protected function createRequest(string $method, string $uri, array $headers = [], array $serverParams = []): ServerRequestInterface
     {
         $uriFactory = new UriFactory();
@@ -88,6 +103,8 @@ class TestCase extends BaseTestCase
 
     protected function handleRequest(ServerRequestInterface $request): ResponseInterface
     {
+        assert($this->app instanceof App);
+
         return $this->app->handle($request);
     }
 
@@ -97,10 +114,14 @@ class TestCase extends BaseTestCase
         return $this->handleRequest($request);
     }
 
+    /**
+     * @return array<string, string>
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     protected function getCsrfToken(): array
     {
-        /** @var Guard $guard */
-        $guard = $this->container->get(Guard::class);
+        $guard = $this->getService(Guard::class);
         $pair = $guard->generateToken();
 
         return [
@@ -109,6 +130,11 @@ class TestCase extends BaseTestCase
         ];
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     protected function post(string $uri, array $data = [], bool $withCsrf = true): ResponseInterface
     {
         if ($withCsrf && $this->container instanceof ContainerInterface && $this->container->has(Guard::class)) {
@@ -120,5 +146,22 @@ class TestCase extends BaseTestCase
         $request = $this->createRequest('POST', $uri, $headers)->withParsedBody($data);
 
         return $this->handleRequest($request);
+    }
+
+    /**
+     * Helper to retrieve typed services from container in tests.
+     *
+     * @template T of object
+     * @param class-string<T> $id
+     * @return T
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    protected function getService(string $id): object
+    {
+        assert($this->container instanceof ContainerInterface);
+        /** @var T $service */
+        $service = $this->container->get($id);
+        return $service;
     }
 }

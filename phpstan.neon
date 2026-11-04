@@ -1,14 +1,9 @@
 parameters:
-    level: 5
+    level: 8
 
     paths:
         - src
         - tests
         - config
         - public
-        - migrations
         - console
-
-    checkFunctionNameCase: true
-    checkInternalClassCaseSensitivity: true
-    reportUnmatchedIgnoredErrors: true

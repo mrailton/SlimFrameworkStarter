@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Twig;
 
 use App\Twig\CsrfExtension;
+use ArrayAccess;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Slim\Csrf\Guard;
@@ -16,7 +17,8 @@ use Twig\TwigFunction;
 class CsrfExtensionTest extends TestCase
 {
     private Guard $guard;
-    private array $sessionStorage = [];
+    /** @var array<string, mixed>|ArrayAccess<string, mixed>|null */
+    private array|ArrayAccess|null $sessionStorage = [];
 
     protected function setUp(): void
     {

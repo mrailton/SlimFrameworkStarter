@@ -6,11 +6,16 @@ namespace App;
 
 use DI\Bridge\Slim\Bridge;
 use DI\ContainerBuilder;
+use Exception;
 use Psr\Container\ContainerInterface;
 use Slim\App;
 
 class AppFactory
 {
+    /**
+     * @param array<string, mixed> $definitions
+     * @throws Exception
+     */
     public static function createContainer(array $definitions = []): ContainerInterface
     {
         $builder = new ContainerBuilder();
@@ -26,6 +31,10 @@ class AppFactory
         return $builder->build();
     }
 
+    /**
+     * @return App<ContainerInterface>
+     * @throws Exception
+     */
     public static function createApp(?ContainerInterface $container = null): App
     {
         $container ??= self::createContainer();

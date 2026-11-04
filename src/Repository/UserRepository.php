@@ -8,10 +8,11 @@ use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 
-class UserRepository
+readonly class UserRepository
 {
-    private readonly EntityRepository $repository;
-    public function __construct(private readonly EntityManagerInterface $entityManager)
+    /** @var EntityRepository<User> */
+    private EntityRepository $repository;
+    public function __construct(private EntityManagerInterface $entityManager)
     {
         $this->repository = $this->entityManager->getRepository(User::class);
     }

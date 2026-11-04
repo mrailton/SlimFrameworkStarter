@@ -16,6 +16,7 @@ use Twig\Node\Expression\ArrayExpression;
 
 class ViteExtensionTest extends TestCase
 {
+    /** @var list<string> */
     private array $tempFiles = [];
 
     protected function tearDown(): void
@@ -30,6 +31,9 @@ class ViteExtensionTest extends TestCase
         parent::tearDown();
     }
 
+    /**
+     * @return array<string, array{0: string}>
+     */
     public static function cssExtensionsProvider(): array
     {
         return [
@@ -42,6 +46,9 @@ class ViteExtensionTest extends TestCase
         ];
     }
 
+    /**
+     * @return array<string, array{0: string, 1: string}>
+     */
     public static function buildUrlProvider(): array
     {
         return [
@@ -506,6 +513,10 @@ class ViteExtensionTest extends TestCase
         $this->assertSame('<script type="module" src="/build/assets/app-123.js"></script>', $output);
     }
 
+    /**
+     * @param array<string, mixed>|string $content
+     * @throws JsonException
+     */
     private function createManifestFile(array|string $content): string
     {
         $path = tempnam(sys_get_temp_dir(), 'vite_manifest_');

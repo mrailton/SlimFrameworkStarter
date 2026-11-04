@@ -6,6 +6,7 @@ namespace App\Twig;
 
 use const ENT_QUOTES;
 
+use Exception;
 use Slim\Csrf\Guard;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
@@ -50,6 +51,10 @@ final class CsrfExtension extends AbstractExtension implements GlobalsInterface
         );
     }
 
+    /**
+     * @return array{name_key: string, name: string, value_key: string, value: string}
+     * @throws Exception
+     */
     public function getToken(): array
     {
         $nameKey = $this->guard->getTokenNameKey();

@@ -16,7 +16,7 @@ class UserRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = $this->container->get(UserRepository::class);
+        $this->repository = $this->getService(UserRepository::class);
     }
 
     #[Test]

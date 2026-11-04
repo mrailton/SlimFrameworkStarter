@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Twig;
 
+use JsonException;
 use RuntimeException;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
 final class ViteExtension extends AbstractExtension
 {
+    /** @var array<string, array{file: string, css?: list<string>, imports?: list<string>}>|null */
     private ?array $manifest = null;
 
     public function __construct(
@@ -29,13 +31,15 @@ final class ViteExtension extends AbstractExtension
     /** @param string|string[] $entries */
     public function render(string|array $entries): string
     {
-        $entries = (array) $entries;
+        $entries = array_values((array) $entries);
 
         return $this->isDev
             ? $this->renderDev($entries)
             : $this->renderProd($entries);
     }
 
+
+    /** @param list<string> $entries */
     private function renderDev(array $entries): string
     {
         $tags = [sprintf('<script type="module" src="%s/@vite/client"></script>', $this->devServer)];
@@ -50,6 +54,10 @@ final class ViteExtension extends AbstractExtension
         return implode("\n", $tags);
     }
 
+    /**
+     * @param list<string> $entries
+     * @throws JsonException
+     */
     private function renderProd(array $entries): string
     {
         $manifest = $this->loadManifest();
@@ -90,7 +98,13 @@ final class ViteExtension extends AbstractExtension
         return implode("\n", $tags);
     }
 
-    /** CSS from the chunk itself and everything it imports, recursively. */
+    /**
+     * CSS from the chunk itself and everything it imports, recursively.
+     *
+     * @param array<string, array{file: string, css?: list<string>, imports?: list<string>}> $manifest
+     * @param array<string, bool> $seen
+     * @return list<string>
+     */
     private function collectCss(array $manifest, string $key, array &$seen = []): array
     {
         if (isset($seen[$key]) || !isset($manifest[$key])) {
@@ -106,7 +120,13 @@ final class ViteExtension extends AbstractExtension
         return $files;
     }
 
-    /** JS files of imported chunks, for modulepreload. */
+    /**
+     * JS files of imported chunks, for modulepreload.
+     *
+     * @param array<string, array{file: string, css?: list<string>, imports?: list<string>}> $manifest
+     * @param array<string, bool> $seen
+     * @return list<string>
+     */
     private function collectImports(array $manifest, string $key, array &$seen = []): array
     {
         $files = [];
@@ -122,6 +142,10 @@ final class ViteExtension extends AbstractExtension
         return $files;
     }
 
+    /**
+     * @return array<string, array{file: string, css?: list<string>, imports?: list<string>}>
+     * @throws JsonException
+     */
     private function loadManifest(): array
     {
         if ($this->manifest !== null) {
@@ -132,8 +156,14 @@ final class ViteExtension extends AbstractExtension
             throw new RuntimeException("Vite manifest not found at {$this->manifestPath}. Run `npm run build`.");
         }
 
+        $content = file_get_contents($this->manifestPath);
+
+        if ($content === false) {
+            throw new RuntimeException("Failed to read Vite manifest at {$this->manifestPath}.");
+        }
+
         return $this->manifest = json_decode(
-            file_get_contents($this->manifestPath),
+            $content,
             true,
             512,
             JSON_THROW_ON_ERROR,

@@ -25,7 +25,7 @@ class AuthTest extends TestCase
     #[Test]
     public function loginPageRedirectsWhenAlreadyAuthenticated(): void
     {
-        $userRepo = $this->container->get(UserRepository::class);
+        $userRepo = $this->getService(UserRepository::class);
         $user = new User('John Doe', 'john@example.com', 'securepass123');
         $userRepo->save($user);
 
@@ -40,7 +40,7 @@ class AuthTest extends TestCase
     #[Test]
     public function loginWorks(): void
     {
-        $userRepo = $this->container->get(UserRepository::class);
+        $userRepo = $this->getService(UserRepository::class);
         $user = new User('John Doe', 'john@example.com', 'securepass123');
         $userRepo->save($user);
 
@@ -57,7 +57,7 @@ class AuthTest extends TestCase
     #[Test]
     public function storeLoginRedirectsWhenAlreadyAuthenticated(): void
     {
-        $userRepo = $this->container->get(UserRepository::class);
+        $userRepo = $this->getService(UserRepository::class);
         $user = new User('John Doe', 'john@example.com', 'securepass123');
         $userRepo->save($user);
 
@@ -75,7 +75,7 @@ class AuthTest extends TestCase
     #[Test]
     public function loginFailsWithInvalidPassword(): void
     {
-        $userRepo = $this->container->get(UserRepository::class);
+        $userRepo = $this->getService(UserRepository::class);
         $user = new User('John Doe', 'john@example.com', 'securepass123');
         $userRepo->save($user);
 
@@ -155,7 +155,7 @@ class AuthTest extends TestCase
     #[Test]
     public function logoutClearsSessionAndRedirects(): void
     {
-        $userRepo = $this->container->get(UserRepository::class);
+        $userRepo = $this->getService(UserRepository::class);
         $user = new User('John Doe', 'john@example.com', 'securepass123');
         $userRepo->save($user);
 
@@ -184,7 +184,7 @@ class AuthTest extends TestCase
     #[Test]
     public function layoutRendersUserNameAndLogoutLinkForAuthenticatedUsers(): void
     {
-        $userRepo = $this->container->get(UserRepository::class);
+        $userRepo = $this->getService(UserRepository::class);
         $user = new User('Jane Smith', 'jane@example.com', 'securepass123');
         $userRepo->save($user);
 
