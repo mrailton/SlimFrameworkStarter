@@ -6,8 +6,8 @@ namespace App\Controller\Auth;
 
 use App\Auth\AuthManager;
 use App\Controller\BaseController;
-use Slim\Psr7\Request;
-use Slim\Psr7\Response;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 
 class StoreLoginController extends BaseController

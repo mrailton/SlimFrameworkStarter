@@ -99,7 +99,7 @@ class UserTest extends TestCase
         $user = new User('John', 'john@example.com');
 
         $user->onPrePersist();
-        $this->assertInstanceOf(DateTimeImmutable::class, $user->getCreatedAt());
+        $this->assertLessThanOrEqual(new DateTimeImmutable(), $user->getCreatedAt());
         $this->assertNull($user->getUpdatedAt());
 
         $user->onPreUpdate();
