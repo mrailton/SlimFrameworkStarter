@@ -65,7 +65,7 @@ ENTRYPOINT []
 CMD []
 USER root
 COPY composer.json composer.lock ./
-COPY phpunit.xml pint.json rector.php ./
+COPY phpunit.xml pint.json rector.php phpstan.neon ./
 COPY tests/ ./tests/
 RUN --mount=type=cache,target=/root/.composer/cache \
     composer install --prefer-dist --no-interaction --no-progress && \
